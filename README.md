@@ -79,6 +79,6 @@ This project serves as a learning environment for mastering key backend developm
  - Add API documentation (e.g., Swagger or Postman)
 
  ## 👤 Author
-Made with 💻 by Alakorede (Luìz Moraes)
+Made with 💻 Hackintosh by Alakorede (Luìz Moraes)
 luizmoraesim@gmail.com
 https://github.com/alakorede
