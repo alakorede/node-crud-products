@@ -1,5 +1,6 @@
 const authMiddleware = require("../middlewares/authMiddleware");
 const authService = require("../services/authService");
+const authUtils = require("../utils/authUtils");
 const Joi = require("joi")
 
 const userSchema = Joi.object({
@@ -18,27 +19,33 @@ async function createUser(req,res) {
     const userCreated = await authService.createUser(value);
 
     if (userCreated) {
-        return res.status(201).json(JSON.stringify(userCreated)).send('Usuário registrado com sucesso!');
+        return res.status(201).json(userCreated)
     }
     
-    return res.status(400).json({ message: 'Erro ao criar usuário' });
+    return res.status(400).json({ message: 'Error on user creation' });
+};
 
-// Valide os dados de entrada(nome de usuário, email, senha) usando Joi.  - OK
-// Verifique se o usuário já existe no seu "banco de dados"
-// Faça o hash da senha usando bcrypt.
-// Salve o novo usuário.
-// Gere um Access Token e um Refresh Token usando jsonwebtoken.
-// Responda com os tokens.
-}
+async function login(req, res) {
+    const { error, value } = userSchema.validate(req.body);
 
-async function login(user, password,) {
+    if (error) {
+        return res.status(400).json({ error: error.details });
+    }
+    console.log(value);
+    let isUserValid = await authService.getUser(value);
+    console.log(isUserValid)
+    if (!isUserValid) {
+        return res.status(401).json({ error: "Not Authorized"});
+    }
 
-// Valide os dados de entrada(email, senha) usando Joi.
-// Verifique se o usuário existe.
-// Compare a senha fornecida com o hash armazenado usando bcrypt.compare().
-// Se as credenciais forem válidas, gere um novo Access Token e Refresh Token.
-// Responda com os tokens.
-}
+    isUserValid = await authUtils.createTokens(isUserValid);
+
+    await authService.updateUser(isUserValid);
+
+    let responseObject = {token: isUserValid.token, refreshToken: isUserValid.refreshToken};
+    
+    return res.status(200).json(responseObject)
+};
 
 async function refresh(refreshToken){
 // Receba o Refresh Token no corpo da requisição(ou via cookie).

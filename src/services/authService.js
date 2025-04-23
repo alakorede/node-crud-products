@@ -8,7 +8,7 @@ const userRespository = require("../repositories/userRepository");
 async function createUser(userData) {
     const user = await userRespository.get(userData.email);
     if (user) {
-        throw new Error("User already exists");
+        return false
     } else {
         const saltRounds = 10;
 
@@ -22,12 +22,27 @@ async function createUser(userData) {
     }
 }
 
-async function getUser(email) {
+async function getUser(userData) {
     return await userRespository.get(userData.email);
+}
+
+async function updateUser(userData) {
+    const user = await userRespository.get(userData.email);
+    if (!user) {
+        return false;
+    }
+    const saltRounds = 10;
+
+    bcrypt.hash(userData.password, saltRounds, function (err, hash) {
+        userData.password = hash;
+    });
+
+    return await userRespository.update(userData);
 }
 
 
 module.exports = {
     createUser,
-    getUser
+    getUser,
+    updateUser
 }
