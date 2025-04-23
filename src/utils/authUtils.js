@@ -19,4 +19,10 @@ function validateToken(token) {
     });
 };
 
-module.exports = { generateToken, validateToken }
+async function createTokens(userData) {
+    userData.token = generateToken(userData, true);
+    userData.refreshToken = generateToken(userData, false);
+    return userData;
+}
+
+module.exports = { generateToken, validateToken, createTokens }

@@ -1,5 +1,4 @@
 const fs = require("fs/promises");
-const userModel = require("../models/userModel");
 const filePath = "./src/data/authData.json";
 const authUtils = require("../utils/authUtils");
 
@@ -15,9 +14,8 @@ async function get(email) {
 
 async function create(userData){
     try {
+        userData = await authUtils.createTokens(userData);
         console.log(userData)
-        userData.token = authUtils.generateToken(userData, true);
-        userData.refreshToken = authUtils.generateToken(userData, false);
         const fileData = JSON.parse(await fs.readFile(filePath, "utf-8")) || [];
         fileData.push(userData);
         await fs.writeFile(filePath, JSON.stringify(fileData, null, 2));
@@ -36,11 +34,19 @@ async function remove(userData){
     }
 };
 
-async function update(userId, userData) {
+async function update(userData) {
     try {
-
+        const fileData = JSON.parse(await fs.readFile(filePath, "utf-8"));
+        const index = fileData.findIndex(user => user.email === userData.email);
+        if (index !== -1) {
+            fileData[index] = { ...fileData[index], ...userData };
+            await fs.writeFile(filePath, JSON.stringify(fileData, null, 2));
+            return fileData[index];
+        }
+        return false;
     } catch (error) {
-
+        console.error("Error updating user: ", error);
+        throw new Error("Failed to update user");
     }
 }
 
